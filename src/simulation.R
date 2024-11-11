@@ -33,13 +33,13 @@ extract_and_align <- function(scenario, dist1, dist2) {
                              T_unit = "Myr",
                              L_unit = "m")
   
-  source <- scenario$wd_m[,dist1] |> admtools::time_to_strat(adm1, destructive = T) 
-  source <- subset(source, source != 0 & !is.na(source))
-  target <- scenario$wd_m[,dist2] |> admtools::time_to_strat(adm2, destructive = T) 
-  target <- subset(target, target != 0 & !is.na(target))
+  l1 = list(t = scenario$t_myr, val = scenario$wd[,dist1])
+  l2 = list(t = scenario$t_myr, val = scenario$wd[,dist2])
+  source <- l1 |> admtools::time_to_strat(adm1, destructive = T) 
+  target <- l2 |> admtools::time_to_strat(adm2, destructive = T) 
   
-  result <- dtw::dtw(source, 
-                    target, 
+  result <- dtw::dtw(source$val[(is.na(source$h) == F & source$val != 0)], 
+                    target$val[(is.na(target$h) == F & target$val != 0)], 
                     keep.internals = T, 
                     step.pattern = asymmetricP1, 
                     open.begin = F, 
@@ -50,11 +50,11 @@ extract_and_align <- function(scenario, dist1, dist2) {
 #### Comparison without noise ####
 
 # DTW alignment
-extract_and_align(scenarioA, "6km", "8km") |> plot(type="threeway")
+extract_and_align(scenarioA, "6km", "12km") |> plot(type="threeway")
 # perfect alignment
 plot(scenarioA$h_m[,"6km"], scenarioA$h_m[,"8km"])
 
 # DTW alignment
-extract_and_align(scenarioB, "6km", "8km") |> plot(type="threeway")
+extract_and_align(scenarioB, "6km", "10km") |> plot(type="threeway")
 # perfect alignment
 plot(scenarioB$h_m[,"6km"], scenarioB$h_m[,"8km"])
