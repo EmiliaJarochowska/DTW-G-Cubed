@@ -62,23 +62,4 @@ extract_and_align <- function(scenario, dist1, dist2) {
                     step.pattern = asymmetricP1, 
                     open.begin = F, 
                     open.end = T)
-  return(result)
-}
-
-#### Comparison without noise ####
-
-dist1 <- "6km"
-dist2 <- "12km"
-# DTW alignment
-extract_and_align(scenarioA, "6km", "12km") |> plot(type="threeway")
-# perfect alignment
-plot(scenarioA$h_m[,"6km"], scenarioA$h_m[,"8km"])
-
-# DTW alignment
-extract_and_align(scenarioB, "6km", "12km") |> plot(type="threeway")
-# perfect alignment
-plot(scenarioB$h_m[,"6km"], scenarioB$h_m[,"12km"])
-
-# Why does the alignment not work well?
-l1 = list(t = scenarioB$t_myr, val = scenario$wd[,dist1])
-l2 = list(t = scenarioB$t_myr, val = scenario$wd[,dist2])
+  ret
