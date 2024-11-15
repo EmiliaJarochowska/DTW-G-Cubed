@@ -7,6 +7,7 @@
 library(StratPal)
 library(dtw)
 library(admtools)
+library(astrochron)
 source("src/Custom_Step_Pattern.R")
 
 data("scenarioA") # takes 2-3 min to read in
@@ -38,8 +39,25 @@ extract_and_align <- function(scenario, dist1, dist2) {
   source <- l1 |> admtools::time_to_strat(adm1, destructive = T) 
   target <- l2 |> admtools::time_to_strat(adm2, destructive = T) 
   
-  result <- dtw::dtw(source$val[(is.na(source$h) == F & source$val != 0)], 
-                    target$val[(is.na(target$h) == F & target$val != 0)], 
+  source <- do.call(cbind.data.frame, source)
+  target <- do.call(cbind.data.frame, target)
+  source <- source[,c(2,1)]
+  target <- target[,c(2,1)]
+  
+  source_val <- source[(is.na(source$h) == F & source$val != 0),]
+  target_val <- target[(is.na(target$h) == F & target$val != 0),]
+  
+  source_val <- astrochron::linterp(source_val, 
+                                    dt = 0.2,
+                                    verbose = F,
+                                    genplot = F)
+  target_val <- astrochron::linterp(target_val, 
+                                    dt = 0.2,
+                                    verbose = F,
+                                    genplot = F)
+  
+  result <- dtw::dtw(source_val$val, 
+                    target_val$val, 
                     keep.internals = T, 
                     step.pattern = asymmetricP1, 
                     open.begin = F, 
@@ -49,12 +67,18 @@ extract_and_align <- function(scenario, dist1, dist2) {
 
 #### Comparison without noise ####
 
+dist1 <- "6km"
+dist2 <- "12km"
 # DTW alignment
 extract_and_align(scenarioA, "6km", "12km") |> plot(type="threeway")
 # perfect alignment
 plot(scenarioA$h_m[,"6km"], scenarioA$h_m[,"8km"])
 
 # DTW alignment
-extract_and_align(scenarioB, "6km", "10km") |> plot(type="threeway")
+extract_and_align(scenarioB, "6km", "12km") |> plot(type="threeway")
 # perfect alignment
-plot(scenarioB$h_m[,"6km"], scenarioB$h_m[,"8km"])
+plot(scenarioB$h_m[,"6km"], scenarioB$h_m[,"12km"])
+
+# Why does the alignment not work well?
+l1 = list(t = scenarioB$t_myr, val = scenario$wd[,dist1])
+l2 = list(t = scenarioB$t_myr, val = scenario$wd[,dist2])
